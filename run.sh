@@ -5,13 +5,13 @@ git clone --depth 1 https://android.googlesource.com/platform/system/tools/mkboo
 # unpack images from oneplus 13 rom
 mkdir op13
 wget $OP13_ROM_URL
-unzip 9f63f754537e4a65b6be72fdb9093d29.zip payload13.bin
+unzip 9f63f754537e4a65b6be72fdb9093d29.zip payload.bin > payload13.bin
 payload_dumper --partitions pvmfw,vbmeta,vbmeta_system,vbmeta_vendor --out op13 ./payload13.bin
 
 # unpack images from oneplus 12 rom
 mkdir op12
 wget $OP12_ROM_URL
-unzip bb7bc84eefc542c3b113c9d8bf701d31.zip payload12.bin
+unzip bb7bc84eefc542c3b113c9d8bf701d31.zip payload.bin > payload12.bin
 payload_dumper --partitions system,system_ext,product,vbmeta,vbmeta_system,vbmeta_vendor,vendor_boot --out op12 ./payload12.bin
 
 # resign vbmeta_system of oneplus 12 with pvmfw
