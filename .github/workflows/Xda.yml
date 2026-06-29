@@ -1,0 +1,24 @@
+name: Daily Wayback Machine Snapshot
+
+on:
+  # Runs automatically at midnight UTC every day
+  schedule:
+    - cron: '0 0 * * *'
+  
+  # Allows you to manually trigger the workflow from the GitHub UI to test it
+  workflow_dispatch:
+
+jobs:
+  archive-website:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Request snapshot from archive.org
+        # The -f flag ensures the Action fails and alerts you if Archive.org is down
+        run: |
+          curl -f -s -X POST "https://web.archive.org/save" \
+            -d "url=https://xdaforums.com/t/index-oneplus-12-roms-kernels-mods-tweaks-development-25-09-2025.4657133/" \
+            -d "capture_all=on"
+            
+      - name: Success message
+        run: echo "Snapshot successfully requested!"
