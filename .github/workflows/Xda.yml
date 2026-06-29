@@ -3,7 +3,6 @@ name: Daily Wayback Machine Snapshot
 on:
   schedule:
     - cron: '0 0 * * *'
-  
   workflow_dispatch:
 
 jobs:
@@ -16,11 +15,44 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install waybackpy
-        run: pip install waybackpy
+      - name: Install requests module
+        run: pip install requests
 
-      - name: Request snapshot from archive.org
-        run: waybackpy --url "https://xdaforums.com/t/index-oneplus-12-roms-kernels-mods-tweaks-development-25-09-2025.4657133/" --save
-            
-      - name: Success message
-        run: echo "Snapshot successfully requested!"
+      - name: Request snapshot with authentication
+        env:
+          # Pulls the secrets you set in GitHub securely into the environment
+          IA_ACCESS_KEY: ${{ secrets.IA_ACCESS_KEY }}
+          IA_SECRET_KEY: ${{ secrets.IA_SECRET_KEY }}
+        run: |
+          python -c "
+          import requests, os, time
+          
+          url = 'https://web.archive.org/save'
+          
+          # The 'LOW' authorization header is specifically required for the Save Page Now API
+          headers = {
+              'Accept': 'application/json',
+              'Authorization': f'LOW {os.environ[\"IA_ACCESS_KEY\"]}:{os.environ[\"IA_SECRET_KEY\"]}'
+          }
+          
+          data = {
+              'url': 'https://xdaforums.com/t/index-oneplus-12-roms-kernels-mods-tweaks-development-25-09-2025.4657133/',
+              'capture_all': 'on'
+          }
+          
+          # Try up to 3 times with a delay if rate limited
+          for i in range(3):
+              response = requests.post(url, data=data, headers=headers)
+              
+              if response.status_code == 429:
+                  print(f'Rate limited. Waiting 60 seconds... (Attempt {i+1}/3)')
+                  time.sleep(60)
+                  continue
+              
+              response.raise_for_status()
+              print(f'Success: Snapshot requested.')
+              break
+          else:
+              print('Failed after 3 attempts.')
+              exit(1)
+          "
